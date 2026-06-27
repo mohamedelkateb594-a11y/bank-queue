@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام إدارة الطابور - بنك مصر</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+    :root {
+      --primary: #1a3a5c;
+      --accent: #c9a84c;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #1a2533;
+      --muted: #6b7c93;
+      --success: #1a7a4a;
+      --border: #dde3ed;
+      --danger: #b0292a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: var(--primary);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    }
+    .header-logo { display: flex; align-items: center; gap: 12px; }
+    .header-logo .icon {
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .header-title { color: #fff; font-size: 20px; font-weight: 700; }
+    .header-sub { color: rgba(255,255,255,0.65); font-size: 13px; }
+    .admin-link {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none; border: none; font-family: 'Cairo', sans-serif;
+    }
+    .admin-link:hover { color: var(--accent); }
+
+    /* ===== PAGES ===== */
+    .page { display: none; padding: 32px 20px; max-width: 620px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    /* ===== FORM ELEMENTS ===== */
+    .reg-header { text-align: center; margin-bottom: 24px; }
+    .reg-header h2 { font-size: 22px; font-weight: 900; color: var(--primary); }
+    .reg-header p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px; font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: #f8fafc;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--primary); background: #fff;
+    }
+    .form-group input[dir="ltr"] { text-align: left; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .btn-primary:hover { background: #254d7a; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { background: #9aacbe; cursor: default; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      background: #f0f4f8;
+      color: var(--primary);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 10px;
+    }
+    .btn-secondary:hover { background: #e4e9f0; }
+
+    .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+    /* ===== STATUS PAGE ===== */
+    .status-greeting { text-align: center; padding: 10px 0 4px; }
+    .status-greeting .welcome { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+    .status-greeting .name { font-size: 24px; font-weight: 900; color: var(--primary); }
+
+    .ticket-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: linear-gradient(135deg, var(--primary) 60%, #254d7a);
+      color: #fff;
+      border-radius: 14px;
+      padding: 22px 20px;
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .ticket-badge::before {
+      content: '';
+      position: absolute;
+      top: -30px; left: -30px;
+      width: 130px; height: 130px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .ticket-badge .label { font-size: 12px; opacity: .75; }
+    .ticket-badge .number {
+      font-size: 60px; font-weight: 900;
+      letter-spacing: -2px; line-height: 1;
+      color: var(--accent);
+    }
+
+    .waiting-box {
+      background: #fff8ea;
+      border: 1.5px solid #f0d98e;
+      border-radius: 12px;
+      padding: 16px 18px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .waiting-box .wlabel { font-size: 13px; color: #7a6020; margin-bottom: 6px; }
+    .waiting-box .wcount { font-size: 34px; font-weight: 900; color: #b07e10; }
+    .waiting-box .wcount.zero { color: var(--success); }
+    .waiting-box .wsub { font-size: 12px; color: #9a7a30; margin-top: 4px; }
+
+    .survey-box {
+      background: linear-gradient(135deg, #fff8e7, #fff3d4);
+      border: 1.5px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px 18px;
+      text-align: center;
+      margin-bottom: 16px;
+      animation: fadeIn .5s ease;
+    }
+    .survey-box p { font-size: 14px; color: #7a5800; font-weight: 600; margin-bottom: 10px; }
+    .survey-btn {
+      display: inline-block;
+      padding: 10px 24px;
+      background: var(--accent);
+      color: #1a2533;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: background .2s;
+    }
+    .survey-btn:hover { background: #b5923d; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .now-badge {
+      background: #e8f5ee;
+      color: var(--success);
+      border-radius: 30px;
+      padding: 10px 24px;
+      font-size: 15px; font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(26,122,74,0.25); }
+      50% { box-shadow: 0 0 0 8px rgba(26,122,74,0); }
+    }
+
+    .datetime-bar {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 12px; color: var(--muted); margin-top: 12px;
+    }
+
+    /* ===== TRACK PAGE ===== */
+    .track-result-box {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .track-ticket-num {
+      font-size: 48px; font-weight: 900; color: var(--primary);
+      line-height: 1;
+    }
+    .track-ticket-label { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .track-info-row {
+      display: flex; gap: 10px; justify-content: center;
+    }
+    .track-info-pill {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      text-align: center;
+      flex: 1;
+    }
+    .track-info-pill .tval { font-size: 22px; font-weight: 900; color: var(--primary); }
+    .track-info-pill .tlbl { font-size: 11px; color: var(--muted); }
+
+    /* ===== ADMIN LOGIN ===== */
+    .admin-login-title { text-align: center; font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 4px; }
+    .admin-login-sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+    .error-msg {
+      background: #fde8e8; color: var(--danger);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; text-align: center;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* ===== ADMIN DASHBOARD ===== */
+    .admin-top {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .admin-top h2 { font-size: 18px; font-weight: 900; color: var(--primary); }
+    .btn-logout {
+      background: #f0f4f8; border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 7px 14px;
+      font-family: 'Cairo', sans-serif; font-size: 12px;
+      cursor: pointer; color: var(--muted);
+    }
+
+    /* Admin Tabs */
+    .admin-tabs {
+      display: flex; gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .admin-tab {
+      flex: 1; padding: 11px 8px;
+      background: #f8fafc; border: none;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+      transition: background .15s, color .15s;
+      border-left: 1px solid var(--border);
+    }
+    .admin-tab:last-child { border-left: none; }
+    .admin-tab.active { background: var(--primary); color: #fff; }
+    .admin-tab-panel { display: none; }
+    .admin-tab-panel.active { display: block; }
+
+    .counter-section {
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, #1a3a5c, #254d7a);
+      border-radius: 14px; padding: 18px 22px;
+      margin-bottom: 16px; color: #fff;
+    }
+    .counter-left .cl-label { font-size: 12px; opacity: .7; }
+    .counter-left .cl-num { font-size: 50px; font-weight: 900; color: var(--accent); line-height: 1; }
+    .counter-controls { display: flex; gap: 12px; }
+    .btn-counter {
+      width: 48px; height: 48px;
+      border-radius: 50%; border: none;
+      font-size: 22px; font-weight: 700;
+      cursor: pointer; transition: transform .1s;
+      font-family: 'Cairo', sans-serif;
+    }
+    .btn-counter:active { transform: scale(0.92); }
+    .btn-inc { background: var(--accent); color: #1a2533; }
+    .btn-dec { background: rgba(255,255,255,0.15); color: #fff; }
+
+    .manual-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .manual-row input {
+      flex: 1; padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none;
+    }
+    .manual-row input:focus { border-color: var(--primary); }
+    .btn-set {
+      padding: 10px 18px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 10px;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer;
+    }
+
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 16px;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 14px;
+      text-align: center;
+    }
+    .stat-box .sval { font-size: 26px; font-weight: 900; color: var(--primary); }
+    .stat-box .slabel { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .customers-title { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+
+    .customer-row {
+      display: flex; align-items: center;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+    .customer-row .cr-num {
+      width: 34px; height: 34px;
+      background: var(--primary); color: #fff;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 13px; flex-shrink: 0;
+    }
+    .customer-row .cr-num.served { background: var(--success); }
+    .customer-row .cr-num.next { background: var(--accent); color: #1a2533; }
+    .customer-row .cr-info { flex: 1; }
+    .customer-row .cr-name { font-size: 13px; font-weight: 700; }
+    .customer-row .cr-mobile { font-size: 11px; color: var(--muted); direction: ltr; text-align: right; }
+    .customer-row .cr-status {
+      font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600; white-space: nowrap;
+    }
+    .cr-status.waiting { background: #fff8ea; color: #b07e10; }
+    .cr-status.served { background: #e8f5ee; color: var(--success); }
+    .cr-status.next-up { background: #fff3d4; color: #b07e10; font-weight: 900; }
+
+    .empty-state { text-align: center; color: var(--muted); padding: 28px 0; font-size: 13px; }
+
+    /* ===== PRODUCTS ADMIN ===== */
+    .products-admin-list { margin-top: 12px; }
+    .product-admin-card {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1.5px solid var(--border);
+      position: relative;
+    }
+    .product-admin-card .pac-name { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .product-admin-card .pac-feat { font-size: 12px; color: var(--muted); line-height: 1.6; white-space: pre-line; }
+    .pac-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-edit {
+      flex: 1; padding: 7px 12px;
+      background: #fff8e7; color: #b07e10;
+      border: 1.5px solid #f0d98e;
+      border-radius: 8px; font-family: 'Cairo', sans-serif;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .btn-del {
+      flex: 1; padding: 7px 12px;
+      background: #fde8e8; color: var(--danger);
+      border: 1.5px solid #f5c6c6;
+      border-radius: 8px; font-family: 'Cairo', sans-serif;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ===== PRODUCTS CLIENT ===== */
+    .products-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .product-client-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow .2s, transform .1s;
+    }
+    .product-client-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
+    .pcc-header {
+      background: linear-gradient(135deg, var(--primary), #254d7a);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .pcc-icon { font-size: 24px; }
+    .pcc-title { color: #fff; font-size: 15px; font-weight: 700; }
+    .pcc-body {
+      padding: 16px 18px;
+      display: none;
+    }
+    .pcc-body.open { display: block; animation: fadeIn .2s ease; }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; color: var(--text);
+      line-height: 1.5;
+    }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-dot {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+    .pcc-toggle { float: left; color: rgba(255,255,255,0.7); font-size: 12px; }
+
+    /* ===== DANGER BTN ===== */
+    .btn-danger {
+      width: 100%; padding: 11px;
+      background: #fde8e8; color: var(--danger);
+      border: 1.5px solid #f5c6c6;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; margin-bottom: 14px;
+    }
+    .btn-danger:hover { background: #fad0d0; }
+
+    .section-title {
+      font-size: 14px; font-weight: 700; color: var(--primary);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .info-note {
+      background: #e8f5ee; color: var(--success);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 12px; margin-bottom: 12px;
+      display: none;
+    }
+    .info-note.show { display: block; }
+
+    .back-link {
+      background: none; border: none;
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; display: block;
+      text-align: center; margin-top: 14px;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* ===== PRODUCT ICONS MAP ===== */
+    /* default icons per index if no icon set */
+
+    @media(max-width:480px) {
+      .page { padding: 18px 12px; }
+      .card { padding: 18px 14px; }
+      .counter-section { flex-direction: column; gap: 14px; text-align: center; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .admin-tab { font-size: 11px; padding: 9px 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="icon">🏦</div>
+    <div>
+      <div class="header-title">نظام إدارة الطابور</div>
+      <div class="header-sub">خدمة العملاء الذكية</div>
+    </div>
+  </div>
+  <button class="admin-link" onclick="showAdminLogin()">دخول الموظف</button>
+</div>
+
+<!-- ============ PAGE: REGISTRATION ============ -->
+<div class="page active" id="page-register">
+  <div class="card">
+    <div class="reg-header">
+      <h2>🎫 تسجيل الدور</h2>
+      <p>أدخل بياناتك للحصول على رقم تذكرتك</p>
+    </div>
+    <div class="form-group">
+      <label>الاسم الكامل</label>
+      <input type="text" id="reg-name" placeholder="أدخل اسمك الكامل" />
+    </div>
+    <div class="form-group">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="reg-mobile" dir="ltr" placeholder="01XXXXXXXXX" maxlength="11" />
+    </div>
+    <div class="form-group">
+      <label>رقم التذكرة</label>
+      <input type="number" id="reg-ticket" placeholder="أدخل رقم التذكرة" min="1" />
+    </div>
+    <button class="btn-primary" onclick="registerCustomer()">✅ تسجيل الدور</button>
+    <div class="action-buttons">
+      <button class="btn-secondary" onclick="showPage('page-track')">🔍 متابعة الدور</button>
+      <button class="btn-secondary" onclick="showPage('page-products')">🏦 منتجات البنك</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE: STATUS ============ -->
+<div class="page" id="page-status">
+  <div class="card">
+    <div class="status-greeting">
+      <div class="welcome">عزيزنا العميل</div>
+      <div class="name" id="st-name">—</div>
+    </div>
+
+    <div class="ticket-badge">
+      <div class="label">رقم تذكرتك</div>
+      <div class="number" id="st-ticket">—</div>
+      <div class="label" style="margin-top:4px;">احتفظ بهذا الرقم</div>
+    </div>
+
+    <div id="st-now-badge" class="now-badge" style="display:none;">
+      🎉 دورك الآن! توجّه للشباك من فضلك
+    </div>
+
+    <div class="waiting-box" id="st-waiting-box">
+      <div class="wlabel">عدد العملاء المتبقين قبل دورك</div>
+      <div class="wcount" id="st-count">—</div>
+      <div class="wsub" id="st-count-sub">عميل في الانتظار</div>
+    </div>
+
+    <div id="surveyBox" class="survey-box" style="display:none;">
+      <p>🌟 يسعدنا معرفة رضائك على الخدمة</p>
+      <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn">⭐ شاركنا رأيك</a>
+    </div>
+
+    <div style="color:var(--muted);font-size:13px;text-align:center;line-height:1.8;padding:12px 0;border-top:1px solid var(--border);margin-top:4px;">
+      <strong style="color:var(--primary);">⏳ نقدّر وقتك</strong><br/>
+      سيتم خدمتك في أقرب وقت
+    </div>
+    <div class="datetime-bar">
+      <span>📅</span>
+      <span id="st-datetime">—</span>
+    </div>
+    <button class="btn-secondary" onclick="goBack()">← تسجيل عميل جديد</button>
+  </div>
+</div>
+
+<!-- ============ PAGE: TRACK ============ -->
+<div class="page" id="page-track">
+  <div class="card">
+    <div class="reg-header">
+      <h2>🔍 متابعة الدور</h2>
+      <p>أدخل رقم موبايلك ورقم التذكرة لمعرفة موقعك في الطابور</p>
+    </div>
+    <div class="form-group">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="track-mobile" dir="ltr" placeholder="01XXXXXXXXX" maxlength="11" />
+    </div>
+    <div class="form-group">
+      <label>رقم التذكرة</label>
+      <input type="number" id="track-ticket" placeholder="أدخل رقم التذكرة" min="1" />
+    </div>
+    <button class="btn-primary" onclick="trackCustomer()">🔍 تتبع الدور</button>
+
+    <div id="track-result" style="margin-top:16px;"></div>
+
+    <button class="back-link" onclick="showPage('page-register')">← رجوع للرئيسية</button>
+  </div>
+</div>
+
+<!-- ============ PAGE: PRODUCTS (CLIENT) ============ -->
+<div class="page" id="page-products">
+  <div style="margin-bottom:16px;">
+    <div class="reg-header">
+      <h2>🏦 منتجات وخدمات البنك</h2>
+      <p>اضغط على أي منتج لعرض مميزاته</p>
+    </div>
+  </div>
+  <div id="products-client-grid" class="products-grid">
+    <div class="empty-state">جارٍ تحميل المنتجات...</div>
+  </div>
+  <button class="back-link" onclick="showPage('page-register')">← رجوع للرئيسية</button>
+</div>
+
+<!-- ============ PAGE: ADMIN LOGIN ============ -->
+<div class="page" id="page-admin-login">
+  <div class="card">
+    <div class="admin-login-title">🔐 دخول الموظف</div>
+    <div class="admin-login-sub">أدخل كلمة السر للوصول إلى لوحة التحكم</div>
+    <div class="error-msg" id="login-error">كلمة السر غير صحيحة، حاول مرة أخرى</div>
+    <div class="form-group">
+      <label>كلمة السر</label>
+      <input type="password" id="admin-pass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doAdminLogin()" />
+    </div>
+    <button class="btn-primary" onclick="doAdminLogin()">دخول</button>
+    <button class="back-link" onclick="showPage('page-register')">← رجوع</button>
+  </div>
+</div>
+
+<!-- ============ PAGE: ADMIN DASHBOARD ============ -->
+<div class="page" id="page-admin" style="max-width:720px;">
+  <div class="admin-top">
+    <h2>🖥️ لوحة التحكم</h2>
+    <button class="btn-logout" onclick="adminLogout()">تسجيل الخروج</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchAdminTab('tab-queue', this)">📋 الطابور</button>
+    <button class="admin-tab" onclick="switchAdminTab('tab-products', this)">🏦 المنتجات</button>
+  </div>
+
+  <!-- TAB: QUEUE -->
+  <div class="admin-tab-panel active" id="tab-queue">
+    <div class="counter-section">
+      <div class="counter-left">
+        <div class="cl-label">الدور الحالي على الشباك</div>
+        <div class="cl-num" id="adm-current">—</div>
+        <div class="cl-label" style="margin-top:4px;">رقم يُخدَم الآن</div>
+      </div>
+      <div class="counter-controls">
+        <button class="btn-counter btn-dec" onclick="changeCounter(-1)">−</button>
+        <button class="btn-counter btn-inc" onclick="changeCounter(1)">+</button>
+      </div>
+    </div>
+
+    <div class="manual-row">
+      <input type="number" id="manual-num" placeholder="أدخل رقمًا محددًا..." min="0" />
+      <button class="btn-set" onclick="setCounterManual()">تحديد</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sval" id="adm-current2">0</div>
+        <div class="slabel">▶ يُخدَم الآن</div>
+      </div>
+      <div class="stat-box">
+        <div class="sval" id="adm-waiting">0</div>
+        <div class="slabel">⏳ في الانتظار</div>
+      </div>
+      <div class="stat-box">
+        <div class="sval" id="adm-total">0</div>
+        <div class="slabel">📋 الإجمالي</div>
+      </div>
+    </div>
+
+    <button class="btn-danger" onclick="clearCustomers()">🗑️ مسح سجلات العملاء - بداية يوم جديد</button>
+
+    <div class="card" style="margin-bottom:0;">
+      <div class="customers-title">📋 قائمة العملاء المسجلين</div>
+      <div id="adm-customers-list">
+        <div class="empty-state">لا يوجد عملاء مسجلون بعد</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PRODUCTS -->
+  <div class="admin-tab-panel" id="tab-products">
+    <div class="card">
+      <div class="section-title" id="product-form-title">➕ إضافة منتج جديد</div>
+      <div class="info-note" id="prod-success-note">✅ تم حفظ المنتج بنجاح</div>
+      <div class="form-group">
+        <label>اسم المنتج</label>
+        <input type="text" id="prod-name" placeholder="مثال: القرض الشخصي" />
+      </div>
+      <div class="form-group">
+        <label>الأيقونة (رمز تعبيري)</label>
+        <input type="text" id="prod-icon" placeholder="مثال: 💳 أو 🏠 أو 💰" />
+      </div>
+      <div class="form-group">
+        <label>المميزات (ميزة واحدة في كل سطر)</label>
+        <textarea id="prod-features" placeholder="تمويل يصل إلى 5 مليون جنيه&#10;فترة سداد تصل إلى 10 سنوات&#10;بدون ضامن"></textarea>
+      </div>
+      <button class="btn-primary" onclick="saveProduct()">💾 حفظ المنتج</button>
+      <button class="btn-secondary" id="btn-cancel-edit" style="display:none;" onclick="cancelProductEdit()">✕ إلغاء التعديل</button>
+    </div>
+
+    <div class="section-title" style="margin-top:4px;">📦 المنتجات الحالية</div>
+    <div id="products-admin-list" class="products-admin-list">
+      <div class="empty-state">لا توجد منتجات بعد</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FIREBASE + LOGIC ============ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, get, onValue, remove }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAu9Fq0EXvJLpXYJubt4ChFCSBHJIqMVCQ",
+    authDomain: "queue-bank-736ae.firebaseapp.com",
+    databaseURL: "https://queue-bank-736ae-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "queue-bank-736ae",
+    storageBucket: "queue-bank-736ae.firebasestorage.app",
+    messagingSenderId: "575502538567",
+    appId: "1:575502538567:web:f7b9fd4b5f65f370f25e62"
+  };
+
+  const ADMIN_PASSWORD = "bank2025";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let currentCustomer = null;
+  let currentCounterVal = 0;
+  let unsubscribeStatus = null;
+  window.editingProductId = null;
+
+  // ======= HELPERS =======
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  window.showPage = showPage;
+
+  window.switchAdminTab = function(tabId, btn) {
+    document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  };
+
+  function formatDateTime() {
+    return new Date().toLocaleString('ar-EG', {
+      weekday: 'long', year: 'numeric', month: 'long',
+      day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  // ======= REGISTRATION =======
+  window.registerCustomer = async function() {
+    const name   = document.getElementById('reg-name').value.trim();
+    const mobile = document.getElementById('reg-mobile').value.trim();
+    const ticket = parseInt(document.getElementById('reg-ticket').value);
+
+    if (!name || mobile.length < 11 || !ticket || ticket < 1) {
+      alert('من فضلك أدخل جميع البيانات بشكل صحيح');
+      return;
+    }
+
+    const btn = document.querySelector('#page-register .btn-primary');
+    btn.disabled = true;
+    btn.textContent = 'جارٍ التسجيل...';
+
+    try {
+      // Check if this mobile is already registered
+      const customersSnap = await get(ref(db, 'customers'));
+      const customersData = customersSnap.val() || {};
+      const allCustomers = Object.values(customersData);
+
+      const mobileExists = allCustomers.find(c => c.mobile === mobile);
+      if (mobileExists) {
+        alert(`رقم الموبايل ${mobile} مسجّل بالفعل برقم تذكرة ${mobileExists.ticket}`);
+        btn.disabled = false;
+        btn.textContent = '✅ تسجيل الدور';
+        return;
+      }
+
+      // Check if ticket already taken
+      const ticketExists = allCustomers.find(c => c.ticket === ticket);
+      if (ticketExists) {
+        alert(`رقم التذكرة ${ticket} مأخوذ من قبل عميل آخر`);
+        btn.disabled = false;
+        btn.textContent = '✅ تسجيل الدور';
+        return;
+      }
+
+      // Save customer
+      await set(ref(db, `customers/${ticket}`), {
+        name, mobile, ticket,
+        registeredAt: Date.now(),
+        served: false
+      });
+
+      // Initialize counter if not exists
+      const snap = await get(ref(db, 'currentCounter'));
+      if (!snap.exists()) await set(ref(db, 'currentCounter'), 0);
+
+      currentCustomer = { name, mobile, ticket };
+      showStatusPage();
+
+    } catch(e) {
+      alert('حدث خطأ، تأكد من إعدادات Firebase');
+      console.error(e);
+    }
+
+    btn.disabled = false;
+    btn.textContent = '✅ تسجيل الدور';
+  };
+
+  // ======= STATUS PAGE =======
+  function showStatusPage() {
+    const c = currentCustomer;
+    document.getElementById('st-name').textContent   = c.name;
+    document.getElementById('st-ticket').textContent = c.ticket;
+    document.getElementById('st-datetime').textContent = formatDateTime();
+
+    if (unsubscribeStatus) unsubscribeStatus();
+    unsubscribeStatus = onValue(ref(db, 'currentCounter'), snap => {
+      const current = snap.val() || 0;
+      currentCounterVal = current;
+      const waiting = Math.max(0, c.ticket - current - 1);
+      const isMyTurn = current >= c.ticket;
+
+      const countEl  = document.getElementById('st-count');
+      const subEl    = document.getElementById('st-count-sub');
+      const nowEl    = document.getElementById('st-now-badge');
+      const wBox     = document.getElementById('st-waiting-box');
+      const surveyEl = document.getElementById('surveyBox');
+
+      if (isMyTurn) {
+        nowEl.style.display    = 'block';
+        wBox.style.display     = 'none';
+        surveyEl.style.display = 'block';
+      } else {
+        nowEl.style.display    = 'none';
+        wBox.style.display     = 'block';
+        surveyEl.style.display = 'none';
+        countEl.textContent    = waiting;
+        countEl.className      = 'wcount' + (waiting === 0 ? ' zero' : '');
+        subEl.textContent      = waiting === 0 ? 'أنت التالي!' : 'عميل في الانتظار قبلك';
+      }
+    });
+
+    showPage('page-status');
+  }
+
+  window.goBack = function() {
+    if (unsubscribeStatus) { unsubscribeStatus(); unsubscribeStatus = null; }
+    document.getElementById('reg-name').value   = '';
+    document.getElementById('reg-mobile').value = '';
+    document.getElementById('reg-ticket').value = '';
+    showPage('page-register');
+  };
+
+  // ======= TRACK CUSTOMER =======
+  let unsubscribeTrack = null;
+
+  window.trackCustomer = async function() {
+    const mobile    = document.getElementById('track-mobile').value.trim();
+    const ticket    = parseInt(document.getElementById('track-ticket').value);
+    const resultEl  = document.getElementById('track-result');
+    const trackBtn  = document.querySelector('#page-track .btn-primary');
+
+    if (!mobile || mobile.length < 11 || !ticket || ticket < 1) {
+      resultEl.innerHTML = '<div style="color:var(--danger);text-align:center;font-size:13px;padding:10px;">من فضلك أدخل رقم الموبايل ورقم التذكرة</div>';
+      return;
+    }
+
+    // Stop any previous listener
+    if (unsubscribeTrack) { unsubscribeTrack(); unsubscribeTrack = null; }
+
+    resultEl.innerHTML = '<div class="empty-state">جارٍ البحث...</div>';
+
+    try {
+      // Verify customer exists and mobile matches
+      const snap = await get(ref(db, `customers/${ticket}`));
+      if (!snap.exists()) {
+        resultEl.innerHTML = '<div style="color:var(--danger);text-align:center;font-size:13px;padding:10px;">❌ رقم التذكرة غير موجود</div>';
+        return;
+      }
+      const customer = snap.val();
+      if (customer.mobile !== mobile) {
+        resultEl.innerHTML = '<div style="color:var(--danger);text-align:center;font-size:13px;padding:10px;">❌ رقم الموبايل لا يتطابق مع هذه التذكرة</div>';
+        return;
+      }
+
+      // Hide input fields and show live tracking mode
+      trackBtn.textContent = '🔄 تتبع مباشر...';
+      trackBtn.disabled = true;
+
+      // Live listener on counter — updates automatically
+      unsubscribeTrack = onValue(ref(db, 'currentCounter'), snap => {
+        const current  = snap.val() || 0;
+        const waiting  = Math.max(0, ticket - current - 1);
+        const isMyTurn = current >= ticket;
+
+        let html = `
+          <div class="track-result-box">
+            <div class="track-ticket-label">رقم تذكرتك</div>
+            <div class="track-ticket-num">${ticket}</div>
+          </div>`;
+
+        if (isMyTurn) {
+          html += `
+            <div class="now-badge">🎉 دورك الآن! توجّه للشباك</div>
+            <div class="survey-box" style="margin-top:14px;">
+              <p>🌟 يسعدنا معرفة رضائك على الخدمة</p>
+              <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn">⭐ شاركنا رأيك</a>
+            </div>`;
+        } else {
+          html += `
+            <div class="track-info-row">
+              <div class="track-info-pill">
+                <div class="tval">${current}</div>
+                <div class="tlbl">الدور الحالي</div>
+              </div>
+              <div class="track-info-pill">
+                <div class="tval" style="color:${waiting===0?'var(--success)':'var(--primary)'}">${waiting}</div>
+                <div class="tlbl">${waiting===0?'أنت التالي!':'عميل قبلك'}</div>
+              </div>
+            </div>
+            <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px;">
+              🔄 يتحدث تلقائياً
+            </div>`;
+        }
+
+        html += `<button class="btn-secondary" style="margin-top:14px;" onclick="stopTrack()">← بحث من جديد</button>`;
+        resultEl.innerHTML = html;
+      });
+
+    } catch(e) {
+      resultEl.innerHTML = '<div style="color:var(--danger);text-align:center;font-size:13px;padding:10px;">حدث خطأ، حاول مرة أخرى</div>';
+      console.error(e);
+    }
+  };
+
+  window.stopTrack = function() {
+    if (unsubscribeTrack) { unsubscribeTrack(); unsubscribeTrack = null; }
+    document.getElementById('track-result').innerHTML = '';
+    document.getElementById('track-mobile').value = '';
+    document.getElementById('track-ticket').value = '';
+    const trackBtn = document.querySelector('#page-track .btn-primary');
+    trackBtn.textContent = '🔍 تتبع الدور';
+    trackBtn.disabled = false;
+  };
+
+  // ======= ADMIN LOGIN =======
+  window.showAdminLogin = function() { showPage('page-admin-login'); };
+
+  window.doAdminLogin = function() {
+    const pass  = document.getElementById('admin-pass').value;
+    const errEl = document.getElementById('login-error');
+    if (pass === ADMIN_PASSWORD) {
+      errEl.classList.remove('show');
+      document.getElementById('admin-pass').value = '';
+      loadAdminDashboard();
+      showPage('page-admin');
+    } else {
+      errEl.classList.add('show');
+    }
+  };
+
+  window.adminLogout = function() { showPage('page-register'); };
+
+  // ======= ADMIN DASHBOARD =======
+  function loadAdminDashboard() {
+    onValue(ref(db, 'currentCounter'), snap => {
+      const val = snap.val() || 0;
+      currentCounterVal = val;
+      document.getElementById('adm-current').textContent  = val;
+      document.getElementById('adm-current2').textContent = val;
+    });
+
+    onValue(ref(db, 'customers'), snap => {
+      const data      = snap.val() || {};
+      const customers = Object.values(data).sort((a,b) => a.ticket - b.ticket);
+      const current   = currentCounterVal;
+      const waiting   = customers.filter(c => !c.served && c.ticket > current).length;
+
+      document.getElementById('adm-waiting').textContent = waiting;
+      document.getElementById('adm-total').textContent   = customers.length;
+      renderCustomersList(customers, current);
+    });
+  }
+
+  function renderCustomersList(customers, current) {
+    const el = document.getElementById('adm-customers-list');
+    if (!customers.length) {
+      el.innerHTML = '<div class="empty-state">لا يوجد عملاء مسجلون بعد</div>';
+      return;
+    }
+    el.innerHTML = customers.map(c => {
+      const isServed  = c.ticket <= current;
+      const isNext    = c.ticket === current + 1;
+      const statusText  = isServed ? 'تمّت خدمته' : (isNext ? '▶ التالي' : 'ينتظر');
+      const statusClass = isServed ? 'served' : (isNext ? 'next-up' : 'waiting');
+      const numClass    = isServed ? 'served'  : (isNext ? 'next'    : '');
+      return `
+        <div class="customer-row">
+          <div class="cr-num ${numClass}">${c.ticket}</div>
+          <div class="cr-info">
+            <div class="cr-name">${c.name}</div>
+            <div class="cr-mobile">${c.mobile}</div>
+          </div>
+          <span class="cr-status ${statusClass}">${statusText}</span>
+        </div>`;
+    }).join('');
+  }
+
+  window.changeCounter = async function(delta) {
+    const snap    = await get(ref(db, 'currentCounter'));
+    const current = snap.val() || 0;
+    await set(ref(db, 'currentCounter'), Math.max(0, current + delta));
+  };
+
+  window.setCounterManual = async function() {
+    const val = parseInt(document.getElementById('manual-num').value);
+    if (isNaN(val) || val < 0) { alert('أدخل رقمًا صحيحًا'); return; }
+    await set(ref(db, 'currentCounter'), val);
+    document.getElementById('manual-num').value = '';
+  };
+
+  window.clearCustomers = async function() {
+    if (confirm('سيتم حذف جميع سجلات العملاء وبدء يوم جديد، هل أنت متأكد؟')) {
+      await remove(ref(db, 'customers'));
+      await set(ref(db, 'currentCounter'), 0);
+    }
+  };
+
+  // ======= PRODUCTS =======
+  const PRODUCT_ICONS = ['💳','🏠','💰','📈','🛡️','🚗','✈️','🎓','💼','🏥'];
+
+  // Listen to products changes - update BOTH client and admin views
+  onValue(ref(db, 'products'), snap => {
+    const data = snap.val() || {};
+    renderProductsClient(data);
+    renderProductsAdmin(data);
+  });
+
+  function renderProductsClient(data) {
+    const grid = document.getElementById('products-client-grid');
+    const entries = Object.entries(data);
+    if (!entries.length) {
+      grid.innerHTML = '<div class="empty-state">لا توجد منتجات حالياً</div>';
+      return;
+    }
+    grid.innerHTML = entries.map(([id, p], idx) => {
+      const icon = p.icon || PRODUCT_ICONS[idx % PRODUCT_ICONS.length];
+      const features = (p.features || '').split('\n').filter(f => f.trim());
+      const featuresHtml = features.map(f =>
+        `<div class="feature-item"><div class="feature-dot"></div><div>${f.trim()}</div></div>`
+      ).join('');
+      return `
+        <div class="product-client-card">
+          <div class="pcc-header" onclick="toggleProduct('pcc-${id}')">
+            <span class="pcc-icon">${icon}</span>
+            <span class="pcc-title">${p.name}</span>
+            <span class="pcc-toggle">▼</span>
+          </div>
+          <div class="pcc-body" id="pcc-${id}">
+            ${featuresHtml || '<div style="color:var(--muted);font-size:13px;">لا توجد مميزات مضافة</div>'}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  window.toggleProduct = function(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  };
+
+  function renderProductsAdmin(data) {
+    const box = document.getElementById('products-admin-list');
+    const entries = Object.entries(data);
+    if (!entries.length) {
+      box.innerHTML = '<div class="empty-state">لا توجد منتجات بعد</div>';
+      return;
+    }
+    box.innerHTML = entries.map(([id, p], idx) => {
+      const icon = p.icon || PRODUCT_ICONS[idx % PRODUCT_ICONS.length];
+      return `
+        <div class="product-admin-card">
+          <div class="pac-name">${icon} ${p.name}</div>
+          <div class="pac-feat">${(p.features || '').trim()}</div>
+          <div class="pac-actions">
+            <button class="btn-edit" onclick="editProduct('${id}')">✏️ تعديل</button>
+            <button class="btn-del" onclick="deleteProduct('${id}')">🗑️ حذف</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  window.saveProduct = async function() {
+    const name     = document.getElementById('prod-name').value.trim();
+    const icon     = document.getElementById('prod-icon').value.trim();
+    const features = document.getElementById('prod-features').value.trim();
+    if (!name) { alert('أدخل اسم المنتج'); return; }
+
+    const productData = { name, features, icon };
+    const productId   = window.editingProductId || Date.now().toString();
+
+    await set(ref(db, 'products/' + productId), productData);
+
+    document.getElementById('prod-name').value     = '';
+    document.getElementById('prod-icon').value     = '';
+    document.getElementById('prod-features').value = '';
+    window.editingProductId = null;
+    document.getElementById('product-form-title').textContent = '➕ إضافة منتج جديد';
+    document.getElementById('btn-cancel-edit').style.display  = 'none';
+
+    const note = document.getElementById('prod-success-note');
+    note.classList.add('show');
+    setTimeout(() => note.classList.remove('show'), 3000);
+  };
+
+  window.editProduct = async function(id) {
+    const snap = await get(ref(db, 'products/' + id));
+    if (!snap.exists()) return;
+    const p = snap.val();
+    document.getElementById('prod-name').value     = p.name || '';
+    document.getElementById('prod-icon').value     = p.icon || '';
+    document.getElementById('prod-features').value = p.features || '';
+    window.editingProductId = id;
+    document.getElementById('product-form-title').textContent = '✏️ تعديل المنتج';
+    document.getElementById('btn-cancel-edit').style.display  = 'block';
+    document.getElementById('prod-name').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.cancelProductEdit = function() {
+    document.getElementById('prod-name').value     = '';
+    document.getElementById('prod-icon').value     = '';
+    document.getElementById('prod-features').value = '';
+    window.editingProductId = null;
+    document.getElementById('product-form-title').textContent = '➕ إضافة منتج جديد';
+    document.getElementById('btn-cancel-edit').style.display  = 'none';
+  };
+
+  window.deleteProduct = async function(id) {
+    if (confirm('هل تريد حذف هذا المنتج؟')) {
+      await remove(ref(db, 'products/' + id));
+    }
+  };
+
+  // Update datetime every minute
+  setInterval(() => {
+    const el = document.getElementById('st-datetime');
+    if (el) el.textContent = formatDateTime();
+  }, 60000);
+</script>
+
+</body>
+</html>
