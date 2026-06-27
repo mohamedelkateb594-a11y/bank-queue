@@ -338,7 +338,7 @@
     }
 
     .stats-row {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 12px; margin-bottom: 16px;
     }
     .stat-box {
@@ -497,6 +497,7 @@
       .card { padding: 18px 14px; }
       .counter-section { flex-direction: column; gap: 14px; text-align: center; }
       .stats-row { grid-template-columns: 1fr 1fr; }
+      .stat-box.survey-stat { grid-column: span 2; }
       .admin-tab { font-size: 11px; padding: 9px 4px; }
     }
   </style>
@@ -567,7 +568,7 @@
 
     <div id="surveyBox" class="survey-box" style="display:none;">
       <p>🌟 يسعدنا معرفة رضائك على الخدمة</p>
-      <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn">⭐ شاركنا رأيك</a>
+      <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn" onclick="trackSurveyClick()">⭐ شاركنا رأيك</a>
     </div>
 
     <div style="color:var(--muted);font-size:13px;text-align:center;line-height:1.8;padding:12px 0;border-top:1px solid var(--border);margin-top:4px;">
@@ -679,6 +680,10 @@
       <div class="stat-box">
         <div class="sval" id="adm-total">0</div>
         <div class="slabel">📋 الإجمالي</div>
+      </div>
+      <div class="stat-box survey-stat" style="border-color:#f0d98e; background:#fff8ea;">
+        <div class="sval" id="adm-survey" style="color:#b07e10;">0</div>
+        <div class="slabel" style="color:#9a7a30;">⭐ دخلوا الاستبيان</div>
       </div>
     </div>
 
@@ -927,7 +932,7 @@
             <div class="now-badge">🎉 دورك الآن! توجّه للشباك</div>
             <div class="survey-box" style="margin-top:14px;">
               <p>🌟 يسعدنا معرفة رضائك على الخدمة</p>
-              <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn">⭐ شاركنا رأيك</a>
+              <a href="https://eforms.banquemisr.com/CustomerFeedback" target="_blank" class="survey-btn" onclick="trackSurveyClick()">⭐ شاركنا رأيك</a>
             </div>`;
         } else {
           html += `
@@ -966,6 +971,17 @@
     trackBtn.disabled = false;
   };
 
+  // ======= SURVEY CLICK TRACKING =======
+  window.trackSurveyClick = async function() {
+    try {
+      const snap = await get(ref(db, 'surveyClicks'));
+      const current = snap.val() || 0;
+      await set(ref(db, 'surveyClicks'), current + 1);
+    } catch(e) {
+      console.error('Survey tracking error:', e);
+    }
+  };
+
   // ======= ADMIN LOGIN =======
   window.showAdminLogin = function() { showPage('page-admin-login'); };
 
@@ -991,6 +1007,10 @@
       currentCounterVal = val;
       document.getElementById('adm-current').textContent  = val;
       document.getElementById('adm-current2').textContent = val;
+    });
+
+    onValue(ref(db, 'surveyClicks'), snap => {
+      document.getElementById('adm-survey').textContent = snap.val() || 0;
     });
 
     onValue(ref(db, 'customers'), snap => {
@@ -1043,9 +1063,10 @@
   };
 
   window.clearCustomers = async function() {
-    if (confirm('سيتم حذف جميع سجلات العملاء وبدء يوم جديد، هل أنت متأكد؟')) {
+    if (confirm('سيتم حذف جميع سجلات العملاء وإحصائيات الاستبيان وبدء يوم جديد، هل أنت متأكد؟')) {
       await remove(ref(db, 'customers'));
       await set(ref(db, 'currentCounter'), 0);
+      await set(ref(db, 'surveyClicks'), 0);
     }
   };
 
